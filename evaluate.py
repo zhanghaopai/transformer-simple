@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import time
 
-from parser import args
+from myparser import myargs
 from torch.autograd import Variable
 from utils import subsequent_mask
 
@@ -39,11 +39,11 @@ def evaluate(data, model):
             print("".join(cn_sent))
             log(cn_sent, timestamp)
 
-            src = torch.from_numpy(np.array(data.dev_en[i])).long().to(args.device)
+            src = torch.from_numpy(np.array(data.dev_en[i])).long().to(myargs.device)
             src = src.unsqueeze(0)
             src_mask = (src != 0).unsqueeze(-2)
 
-            out = greedy_decode(model, src, src_mask, max_len = args.max_length, start_symbol = data.cn_word_dict["BOS"])
+            out = greedy_decode(model, src, src_mask, max_len = myargs.max_length, start_symbol = data.cn_word_dict["BOS"])
 
             translation = []
             for j in range(1, out.size(1)):

@@ -2,7 +2,7 @@ import time
 
 import torch
 
-from parser import args
+from myparser import myargs
 from lib.loss import SimpleLossCompute
 
 def run_epoch(data, model, loss_compute, epoch):
@@ -40,7 +40,7 @@ def run_epoch(data, model, loss_compute, epoch):
 
 
 def train(data, model, criterion, optimizer):
-    for epoch in range(args.epochs):
+    for epoch in range(myargs.epochs):
         model.train()
         run_epoch(data.train_data, model, SimpleLossCompute(model.generator, criterion, optimizer), epoch)
 
@@ -50,5 +50,5 @@ def train(data, model, criterion, optimizer):
         loss = run_epoch(data.dev_data, model, SimpleLossCompute(model.generator, criterion, None), epoch)
         print('<<<<< Evaluate loss: %f' % loss)
 
-    torch.save(model.state_dict(), args.save_file)
+    torch.save(model.state_dict(), myargs.save_file)
 

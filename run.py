@@ -1,7 +1,7 @@
 import copy
 import os
 
-from parser import args
+from myparser import myargs
 
 import torch
 import torch.nn as nn
@@ -22,58 +22,58 @@ from evaluate import evaluate
 
 def make_model(src_vocab, tgt_vocab, N = 6, d_model = 512, d_ff = 2048, h = 8, dropout = 0.1):
     c = copy.deepcopy
-    attn = MultiHeadedAttention(h, d_model).to(args.device)
-    ff = PositionwiseFeedForward(d_model, d_ff, dropout).to(args.device)
-    position = PositionalEncoding(d_model, dropout).to(args.device)
+    attn = MultiHeadedAttention(h, d_model).to(myargs.device)
+    ff = PositionwiseFeedForward(d_model, d_ff, dropout).to(myargs.device)
+    position = PositionalEncoding(d_model, dropout).to(myargs.device)
     model = Transformer(
-        Encoder(EncoderLayer(d_model, c(attn), c(ff), dropout).to(args.device), N).to(args.device),
+        Encoder(EncoderLayer(d_model, c(attn), c(ff), dropout).to(myargs.device), N).to(myargs.device),
         Decoder(DecoderLayer(d_model, c(attn), c(attn), 
-                             c(ff), dropout).to(args.device), N).to(args.device),
-        nn.Sequential(Embeddings(d_model, src_vocab).to(args.device), c(position)),
-        nn.Sequential(Embeddings(d_model, tgt_vocab).to(args.device), c(position)),
-        Generator(d_model, tgt_vocab)).to(args.device)
+                             c(ff), dropout).to(myargs.device), N).to(myargs.device),
+        nn.Sequential(Embeddings(d_model, src_vocab).to(myargs.device), c(position)),
+        nn.Sequential(Embeddings(d_model, tgt_vocab).to(myargs.device), c(position)),
+        Generator(d_model, tgt_vocab)).to(myargs.device)
     
     # This was important from their code. 
     # Initialize parameters with Glorot / fan_avg.
     for p in model.parameters():
         if p.dim() > 1:
             nn.init.xavier_uniform_(p)
-    return model.to(args.device)
+    return model.to(myargs.device)
 
 def main():
     # 数据预处理
     data = PrepareData()
-    args.src_vocab = len(data.en_word_dict)
-    args.tgt_vocab = len(data.cn_word_dict)
-    print("src_vocab %d" % args.src_vocab)
-    print("tgt_vocab %d" % args.tgt_vocab)
+    myargs.src_vocab = len(data.en_word_dict)
+    myargs.tgt_vocab = len(data.cn_word_dict)
+    print("src_vocab %d" % myargs.src_vocab)
+    print("tgt_vocab %d" % myargs.tgt_vocab)
 
     # 初始化模型
     model = make_model(
-                        args.src_vocab, 
-                        args.tgt_vocab, 
-                        args.layers, 
-                        args.d_model, 
-                        args.d_ff,
-                        args.h_num,
-                        args.dropout
+                        myargs.src_vocab,
+                        myargs.tgt_vocab,
+                        myargs.layers,
+                        myargs.d_model,
+                        myargs.d_ff,
+                        myargs.h_num,
+                        myargs.dropout
                     )
 
    
-    if args.type == 'train':
+    if myargs.type == 'train':
         # 训练
         print(">>>>>>> start train")
-        criterion = LabelSmoothing(args.tgt_vocab, padding_idx = 0, smoothing= 0.0)
-        optimizer = NoamOpt(args.d_model, 1, 2000, torch.optim.Adam(model.parameters(), lr=0, betas=(0.9,0.98), eps=1e-9))
+        criterion = LabelSmoothing(myargs.tgt_vocab, padding_idx = 0, smoothing= 0.0)
+        optimizer = NoamOpt(myargs.d_model, 1, 2000, torch.optim.Adam(model.parameters(), lr=0, betas=(0.9, 0.98), eps=1e-9))
         
         train(data, model, criterion, optimizer)
         print("<<<<<<< finished train")
-    elif args.type == "evaluate":
+    elif myargs.type == "evaluate":
         # 预测
         # 先判断模型有没有训练好(前提)
-        if os.path.exists(args.save_file):
+        if os.path.exists(myargs.save_file):
             # 加载模型
-            model.load_state_dict(torch.load(args.save_file))
+            model.load_state_dict(torch.load(myargs.save_file))
             # 开始预测
             print(">>>>>>> start evaluate")
             evaluate(data, model)         

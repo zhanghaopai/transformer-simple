@@ -4,15 +4,18 @@ import numpy as np
 from nltk import word_tokenize
 from collections import Counter
 from torch.autograd import Variable
-from parser import args
+from myparser import myargs
 from utils import seq_padding, subsequent_mask
+
+import nltk
+nltk.download('punkt')
 
 class PrepareData:
     def __init__(self):
 
         # 读取数据 并分词
-        self.train_en, self.train_cn = self.load_data(args.train_file)
-        self.dev_en, self.dev_cn = self.load_data(args.dev_file)
+        self.train_en, self.train_cn = self.load_data(myargs.train_file)
+        self.dev_en, self.dev_cn = self.load_data(myargs.dev_file)
 
         # 构建单词表
         self.en_word_dict, self.en_total_words, self.en_index_dict = self.build_dict(self.train_en)
@@ -23,13 +26,13 @@ class PrepareData:
         self.dev_en, self.dev_cn = self.wordToID(self.dev_en, self.dev_cn, self.en_word_dict, self.cn_word_dict)
 
         # 划分batch + padding + mask
-        self.train_data = self.splitBatch(self.train_en, self.train_cn, args.batch_size)
-        self.dev_data = self.splitBatch(self.dev_en, self.dev_cn, args.batch_size)
+        self.train_data = self.splitBatch(self.train_en, self.train_cn, myargs.batch_size)
+        self.dev_data = self.splitBatch(self.dev_en, self.dev_cn, myargs.batch_size)
 
     def load_data(self, path):
         en = []
         cn = []
-        with open(path, 'r') as f:
+        with open(path, 'r', encoding='utf-8') as f:
             for line in f:
                 line = line.strip().split('\t')
 
@@ -49,8 +52,8 @@ class PrepareData:
         total_words = len(ls) + 2
 
         word_dict = {w[0]: index + 2 for index, w in enumerate(ls)}
-        word_dict['UNK'] = args.UNK
-        word_dict['PAD'] = args.PAD
+        word_dict['UNK'] = myargs.UNK
+        word_dict['PAD'] = myargs.PAD
 
         index_dict = {v: k for k, v in word_dict.items()}
 
@@ -97,8 +100,8 @@ class Batch:
     "Object for holding a batch of data with mask during training."
     def __init__(self, src, trg=None, pad=0):
 
-        src = torch.from_numpy(src).to(args.device).long()
-        trg = torch.from_numpy(trg).to(args.device).long()
+        src = torch.from_numpy(src).to(myargs.device).long()
+        trg = torch.from_numpy(trg).to(myargs.device).long()
 
         self.src = src
         self.src_mask = (src != pad).unsqueeze(-2)

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from parser import args
+from myparser import myargs
 
 
 class LayerNorm(nn.Module):
