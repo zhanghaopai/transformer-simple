@@ -21,6 +21,15 @@ from train import train
 from evaluate import evaluate
 
 def make_model(src_vocab, tgt_vocab, N = 6, d_model = 512, d_ff = 2048, h = 8, dropout = 0.1):
+    '''
+    src_vocab: 源语言的词汇表
+    tgt_vocab: 目标语言的词汇表
+    N: 编码器和解码器的层数，默认为6
+    d_model: 模型的维度，默认为512
+    d_ff： 前馈神经网络的维度，默认为8
+    h: 多头注意力机制的头数，默认为8
+    dropout: Dropout比例，默认为0.1
+    '''
     # 创建深拷贝函数的别名
     c = copy.deepcopy
     # 创建多头注意力机制组件
