@@ -99,11 +99,12 @@ class PrepareData:
 class Batch:
     "Object for holding a batch of data with mask during training."
     def __init__(self, src, trg=None, pad=0):
-
+        # 将输入的src和trg转换为pytorch张量，并移动到指定设备
         src = torch.from_numpy(src).to(myargs.device).long()
         trg = torch.from_numpy(trg).to(myargs.device).long()
 
         self.src = src
+        # 创建src_mask掩码，用于隐藏填充部分
         self.src_mask = (src != pad).unsqueeze(-2)
         if trg is not None:
             self.trg = trg[:, :-1]
@@ -114,7 +115,9 @@ class Batch:
 
     @staticmethod
     def make_std_mask(tgt, pad):
-        "Create a mask to hide padding and future words."
+        """
+        创建一个掩码
+        """
         tgt_mask = (tgt != pad).unsqueeze(-2)
         tgt_mask = tgt_mask & Variable(
             subsequent_mask(tgt.size(-1)).type_as(tgt_mask.data))
