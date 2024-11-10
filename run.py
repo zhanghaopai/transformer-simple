@@ -21,19 +21,29 @@ from train import train
 from evaluate import evaluate
 
 def make_model(src_vocab, tgt_vocab, N = 6, d_model = 512, d_ff = 2048, h = 8, dropout = 0.1):
+    # 创建深拷贝函数的别名
     c = copy.deepcopy
+    # 创建多头注意力机制组件
     attn = MultiHeadedAttention(h, d_model).to(myargs.device)
+    # 创建前馈神经网络组件
     ff = PositionwiseFeedForward(d_model, d_ff, dropout).to(myargs.device)
+    # 创建位置编码组件
     position = PositionalEncoding(d_model, dropout).to(myargs.device)
+    # 构建模型
     model = Transformer(
+        # 创建编码层
         Encoder(EncoderLayer(d_model, c(attn), c(ff), dropout).to(myargs.device), N).to(myargs.device),
-        Decoder(DecoderLayer(d_model, c(attn), c(attn), 
+        # 创建
+        Decoder(DecoderLayer(d_model, c(attn), c(attn),
                              c(ff), dropout).to(myargs.device), N).to(myargs.device),
+        # 创建源语言的嵌入层和位置编码
         nn.Sequential(Embeddings(d_model, src_vocab).to(myargs.device), c(position)),
+        # 创建目标语言的嵌入层和位置编码
         nn.Sequential(Embeddings(d_model, tgt_vocab).to(myargs.device), c(position)),
+        # 创建生成器，用于输出最后的结果
         Generator(d_model, tgt_vocab)).to(myargs.device)
-    
-    # This was important from their code. 
+
+    # This was important from their code.
     # Initialize parameters with Glorot / fan_avg.
     for p in model.parameters():
         if p.dim() > 1:
